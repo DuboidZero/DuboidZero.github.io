@@ -109,9 +109,13 @@
                     <label for="gym-status" class="block text-sm font-medium text-gray-700">Which of these best describes you?</label>
                     <select id="gym-status" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
                         <option value="">Select...</option>
-                        <option value="Gymgoer">Gym-goer</option>
-                        <option value="Non Gym Goer">Non-Gym-goer</option>
+                        <option value="Gym-goer">Gym-goer</option>
+                        <option value="Non-Gym-goer">Non-Gym-goer</option>
                     </select>
+                </div>
+                <div id="gym-experience-container" class="hidden">
+                    <label for="gym-experience" class="block text-sm font-medium text-gray-700">How long have you been attending the gym? (e.g., 1 year, 2 months)</label>
+                    <input type="text" id="gym-experience" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
                  <div class="mt-6 text-center">
                     <button type="button" id="proceed-to-survey-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Next</button>
@@ -158,6 +162,7 @@
             measurementId: "G-BLBS4RG34S"
     };
         
+        // This line makes it compatible with environments that might inject the config dynamically.
         const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pspp-app';
 
@@ -183,7 +188,9 @@
         const consentCheckbox = document.getElementById('consent-checkbox');
         const proceedToDetailsBtn = document.getElementById('proceed-to-details-btn');
         const proceedToSurveyBtn = document.getElementById('proceed-to-survey-btn');
-
+        const gymStatusSelect = document.getElementById('gym-status');
+        const gymExperienceContainer = document.getElementById('gym-experience-container');
+        const gymExperienceInput = document.getElementById('gym-experience');
 
         // --- AUTH STATE LISTENER ---
         onAuthStateChanged(auth, (user) => {
@@ -257,6 +264,17 @@
             }
         });
 
+        gymStatusSelect.addEventListener('change', () => {
+            if (gymStatusSelect.value === 'Gym-goer') {
+                gymExperienceContainer.classList.remove('hidden');
+                gymExperienceInput.required = true;
+            } else {
+                gymExperienceContainer.classList.add('hidden');
+                gymExperienceInput.required = false;
+                gymExperienceInput.value = '';
+            }
+        });
+
 
         // --- DATA AND SCORING CONFIG (Unchanged) ---
         const psppQuestions = [ { id: 1, left: "Some people feel that they are not very good when it comes to playing sports.", right: "Others feel that they are really good at just about every sport." }, { id: 2, left: "Some people are not very confident about their level of physical conditioning and fitness.", right: "Others always feel confident that they maintain excellent conditioning and fitness." }, { id: 3, left: "Some people feel that compared to most, they have an attractive body.", right: "Others feel that compared to most, their body is not quite so attractive." }, { id: 4, left: "Some people feel that they are physically stronger than most people of their sex.", right: "Others feel that they lack physical strength compared to most others of their sex." }, { id: 5, left: "Some people feel extremely proud of who they are and what they can do physically.", right: "Others are sometimes not quite so proud of who they are physically." }, { id: 6, left: "Some people feel that they are among the best when it comes to athletic ability.", right: "Others feel that they are not among the most able when it comes to athletics." }, { id: 7, left: "Some people make certain they take part in some form of regular vigorous physical exercise.", right: "Others don’t often manage to keep up regular vigorous physical exercise." }, { id: 8, left: "Some people feel that they have difficulty maintaining an attractive body.", right: "Others feel that they are easily able to keep their bodies looking attractive." }, { id: 9, left: "Some people feel that their muscles are much stronger than most others of their sex.", right: "Others feel that on the whole their muscles are not quite so strong as most others of their sex." }, { id: 10, left: "Some people are sometimes not so happy with the way they are or what they can do physically.", right: "Others always feel happy about the kind of person they are physically." }, { id: 11, left: "Some people are not quite so confident when it comes to taking part in sports activities.", right: "Others are among the most confident when it comes to taking part in sports activities." }, { id: 12, left: "Some people do not usually have a high level of stamina and fitness.", right: "Others always maintain a high level of stamina and fitness." }, { id: 13, left: "Some people feel embarrassed by their bodies when it comes to wearing few clothes.", right: "Others do not feel embarrassed by their bodies when it comes wearing few clothes." }, { id: 14, left: "When it comes to situations requiring strength some people are one of the first to step forward.", right: "When it comes to situations requiring strength some people are one of the last to step forward." }, { id: 15, left: "When it comes to the physical side of themselves some people do not feel very confident.", right: "Others seem to have a real sense of confidence in the physical side of themselves." }, { id: 16, left: "Some people feel that they are always one of the best when it comes to joining in sports activities.", right: "Others feel that they are not one of the best when it comes to joining in sports activities." }, { id: 17, left: "Some people tend to feel a little uneasy in fitness and exercise settings.", right: "Others feel confident and at ease at all times in fitness and exercise settings." }, { id: 18, left: "Some people feel that they are often admired because their physique or figure is considered attractive.", right: "Others rarely feel that they receive admiration for the way their body looks." }, { id: 19, left: "Some people tend to lack confidence when it comes to their physical strength.", right: "Others are extremely confident when it comes to their physical strength." }, { id: 20, left: "Some people always have a real positive feeling about the physical side of themselves.", right: "Others sometimes do not feel positive about the physical side of themselves." }, { id: 21, left: "Some people are sometimes a little slower than most when it comes to learning new skills in a sports situation.", right: "Others have always seemed to be among the quickest when it comes to learning new sports skills." }, { id: 22, left: "Some people feel extremely confident about their ability to maintain regular exercise and physical condition.", right: "Others don’t feel quite so confident about their ability to maintain regular exercise and physical condition." }, { id: 23, left: "Some people feel that compared to most, their bodies do not look in the best of shape.", right: "Others feel that compared to most their bodies always look in excellent physical shape." }, { id: 24, left: "Some people feel that they are very strong and have well developed muscles compared to most people.", right: "Others feel that they are not so strong and their muscles are not very well developed." }, { id: 25, left: "Some people wish that they could have more respect for their physical selves.", right: "Others always have great respect for their physical selves." }, { id: 26, left: "Given the chance, some people are always one of the first to join in sports activities.", right: "Other people sometimes hold back and are not usually among the first to join in sports." }, { id: 27, left: "Some people feel that compared to most they always maintain a high level of physical conditioning.", right: "Others feel that compared to most their level of physical conditioning is not usually so high." }, { id: 28, left: "Some people are extremely confident about the appearance of their body.", right: "Others are a little self-conscious about the appearance of their bodies." }, { id: 29, left: "Some people feel that they are not as good as most at dealing with situations requiring physical strength.", right: "Others feel that they are among the best at dealing with situations which require physical strength." }, { id: 30, left: "Some people feel extremely satisfied with the kind of person they are physically.", right: "Others sometimes feel a little dissatisfied with their physical selves." } ];
@@ -324,13 +342,15 @@
             for (const [scaleName, questionIds] of Object.entries(scoring.pspp.scales)) { finalScores[scaleName] = questionIds.reduce((sum, id) => sum + answers.pspp[`q${id}`], 0); }
             for (const [scaleName, questionIds] of Object.entries(scoring.pip.scales)) { finalScores[scaleName] = questionIds.reduce((sum, id) => sum + answers.pip[`q${id}`], 0); }
             
+            const gymStatus = document.getElementById('gym-status').value;
             const personalDetails = {
                 fullName: document.getElementById('full-name').value,
                 age: document.getElementById('age').value,
                 gender: document.getElementById('gender').value,
                 education: document.getElementById('education').value,
                 location: document.getElementById('location').value,
-                gymStatus: document.getElementById('gym-status').value,
+                gymStatus: gymStatus,
+                gymExperience: gymStatus === 'Gym-goer' ? document.getElementById('gym-experience').value : 'N/A'
             };
 
             const user = auth.currentUser;
