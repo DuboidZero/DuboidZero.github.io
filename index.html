@@ -19,10 +19,6 @@
         input[type="radio"]:hover { border-color: #3b82f6; }
         input[type="radio"]:checked::before { content: ''; display: block; width: 0.75rem; height: 0.75rem; margin: 2px; background-color: #3b82f6; border-radius: 50%; }
         .question-card.incomplete { border: 1px solid #ef4444; box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
-        .results-table th, .results-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .results-table th { background-color: #f9fafb; font-weight: 600; color: #374151; }
-        .results-table tr:last-child td { border-bottom: none; }
-        .results-table tr:nth-child(even) { background-color: #f9fafb; }
         button:disabled { background-color: #9ca3af !important; cursor: not-allowed !important; }
     </style>
 </head>
@@ -31,7 +27,7 @@
     <div class="container mx-auto max-w-4xl p-4 sm:p-8">
         <header class="text-center mb-8">
             <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Physical Self-Perception Profile</h1>
-            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-md mt-4" id="user-info-header" class="hidden">
+            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-md mt-4 hidden" id="user-info-header">
                  <p>Logged in as: <span id="user-email-header" class="font-bold"></span></p>
                  <button id="logout-btn" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 text-sm">Logout</button>
             </div>
@@ -110,8 +106,12 @@
                     <input type="text" id="location" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
                 </div>
                  <div>
-                    <label for="gym-years" class="block text-sm font-medium text-gray-700">Number of years that you have been attending the gym</label>
-                    <input type="number" id="gym-years" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                    <label for="gym-status" class="block text-sm font-medium text-gray-700">Which of these best describes you?</label>
+                    <select id="gym-status" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="">Select...</option>
+                        <option value="Gymgoer">Gymgoer</option>
+                        <option value="Non Gym Goer">Non Gym Goer</option>
+                    </select>
                 </div>
                  <div class="mt-6 text-center">
                     <button type="button" id="proceed-to-survey-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Next</button>
@@ -138,12 +138,7 @@
                     <div class="mt-10 text-center"><button type="button" id="submit-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 w-full sm:w-auto">Submit</button></div>
                 </form>
             </div>
-            <div id="results-section" class="bg-white p-6 sm:p-8 rounded-xl shadow-lg mt-10 hidden">
-                <h2 class="text-3xl font-bold text-slate-900 mb-2 text-center">Your Results</h2>
-                <p id="status-message" class="text-gray-600 font-semibold mb-4 text-center"></p>
-                <div id="scores-container" class="overflow-x-auto"></div>
-            </div>
-            <div id="thank-you-section" class="hidden text-center bg-white p-10 rounded-xl shadow-lg">
+            <div id="thank-you-section" class="hidden text-center bg-white p-10 rounded-xl shadow-lg mt-8">
                 <h2 class="text-3xl font-bold text-green-600 mb-4">Thank You!</h2>
                 <p class="text-slate-700 text-lg">Your response has been recorded successfully.</p>
             </div>
@@ -153,7 +148,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         // --- FIREBASE SETUP ---
-       const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyAg-Wjof_J2AHPp44f6sPKhEckWwowuDUM",
             authDomain: "pspp-b879f.firebaseapp.com",
             projectId: "pspp-b879f",
@@ -253,13 +248,12 @@
         });
 
         proceedToSurveyBtn.addEventListener('click', () => {
-            // Simple validation to ensure all fields are filled
             const detailsForm = document.getElementById('details-form');
             if (detailsForm.checkValidity()) {
                 detailsSection.classList.add('hidden');
                 surveyWrapper.classList.remove('hidden');
             } else {
-                detailsForm.reportValidity(); // Shows browser's default validation messages
+                detailsForm.reportValidity();
             }
         });
 
@@ -308,39 +302,44 @@
         async function handleSubmit() {
             const submitBtn = document.getElementById('submit-btn');
             const form = document.getElementById('pspp-form');
-            const resultsSection = document.getElementById('results-section');
-            const statusMessage = document.getElementById('status-message');
-            const scoresContainer = document.getElementById('scores-container');
             
-            statusMessage.textContent = ''; scoresContainer.innerHTML = '';
             document.querySelectorAll('.question-card').forEach(card => card.classList.remove('incomplete'));
 
             let allAnswered = true; const answers = { pspp: {}, pip: {} };
             for (let i = 1; i <= 30; i++) { const radios = form.elements[`psppq${i}`]; if (radios && radios.value) { answers.pspp[`q${i}`] = parseInt(radios.value, 10); } else { allAnswered = false; document.getElementById(`card-psppq${i}`).classList.add('incomplete'); } }
             for (let i = 1; i <= 8; i++) { const radios = form.elements[`pipq${i}`]; if (radios && radios.value) { answers.pip[`q${i}`] = parseInt(radios.value, 10); } else { allAnswered = false; document.getElementById(`card-pipq${i}`).classList.add('incomplete'); } }
 
-            if (!allAnswered) { statusMessage.textContent = 'Please answer all questions. Unanswered questions are highlighted in red.'; resultsSection.classList.remove('hidden'); resultsSection.scrollIntoView({ behavior: 'smooth' }); return; }
+            if (!allAnswered) {
+                alert('Please answer all questions. Unanswered questions are highlighted in red.');
+                const firstIncomplete = document.querySelector('.incomplete');
+                if (firstIncomplete) {
+                    firstIncomplete.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
             
             submitBtn.disabled = true; submitBtn.textContent = 'Saving...';
-            statusMessage.textContent = 'Calculating and saving your response...';
-            resultsSection.classList.remove('hidden'); resultsSection.scrollIntoView({ behavior: 'smooth' });
 
             const finalScores = {};
             for (const [scaleName, questionIds] of Object.entries(scoring.pspp.scales)) { finalScores[scaleName] = questionIds.reduce((sum, id) => sum + answers.pspp[`q${id}`], 0); }
             for (const [scaleName, questionIds] of Object.entries(scoring.pip.scales)) { finalScores[scaleName] = questionIds.reduce((sum, id) => sum + answers.pip[`q${id}`], 0); }
             
-            // --- GATHER PERSONAL DETAILS ---
             const personalDetails = {
                 fullName: document.getElementById('full-name').value,
                 age: document.getElementById('age').value,
                 gender: document.getElementById('gender').value,
                 education: document.getElementById('education').value,
                 location: document.getElementById('location').value,
-                gymYears: document.getElementById('gym-years').value,
+                gymStatus: document.getElementById('gym-status').value,
             };
 
             const user = auth.currentUser;
-            if (!user) { statusMessage.textContent = 'Error: You are not logged in. Please refresh and log in again.'; submitBtn.disabled = false; submitBtn.textContent = 'Submit'; return; }
+            if (!user) {
+                alert('Error: You are not logged in. Please refresh and log in again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+                return;
+            }
 
             try {
                 const userDoc = { 
@@ -353,15 +352,14 @@
                 const docRef = await addDoc(collection(db, `artifacts/${appId}/users/${user.uid}/responses`), userDoc);
                 console.log("Document written with ID: ", docRef.id);
                 
-                document.getElementById('survey-container').classList.add('hidden');
-                document.getElementById('results-section').classList.add('hidden');
+                document.getElementById('survey-wrapper').classList.add('hidden');
                 document.getElementById('thank-you-section').classList.remove('hidden');
 
             } catch (e) {
                 console.error("Error adding document: ", e);
-                statusMessage.textContent = 'Error: Could not save your response. Please check your internet connection and try again.';
+                alert('Error: Could not save your response. Please check your internet connection and try again.');
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit!';
+                submitBtn.textContent = 'Submit';
             }
         }
     </script>
