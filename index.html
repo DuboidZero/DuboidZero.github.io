@@ -152,19 +152,18 @@
     <!-- Firebase SDK -->
     <script type="module">
         // --- FIREBASE SETUP ---
+        // This configuration is now hardcoded for your specific project.
         const firebaseConfig = {
             apiKey: "AIzaSyAg-Wjof_J2AHPp44f6sPKhEckWwowuDUM",
             authDomain: "pspp-b879f.firebaseapp.com",
             projectId: "pspp-b879f",
-            storageBucket: "pspp-b879f.firebasestorage.app",
+            storageBucket: "pspp-b879f.appspot.com",
             messagingSenderId: "252651291932",
             appId: "1:252651291932:web:1d25e7b3f955ee606d66d9",
             measurementId: "G-BLBS4RG34S"
-    };
+        };
         
-        // This line makes it compatible with environments that might inject the config dynamically.
-        const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pspp-app';
+        const appId = 'default-pspp-app';
 
         // --- IMPORT FIREBASE MODULES ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -172,7 +171,7 @@
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         // --- INITIALIZE FIREBASE ---
-        const app = initializeApp(finalFirebaseConfig);
+        const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
